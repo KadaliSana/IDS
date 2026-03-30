@@ -28,7 +28,7 @@ BLOCK_THRESHOLD   = 85        # auto-block above this (if enabled)
 ENSEMBLE_WEIGHTS = {
     "isolation_forest": 0.25,
     "random_forest":    0.35,
-    "lstm":             0.25,
+    "transformer":      0.25,
     "statistical":      0.15,
 }
 
@@ -37,7 +37,7 @@ MODEL_DIR            = Path("models/artefacts")
 RF_MODEL_PATH        = MODEL_DIR / "rf_classifier.joblib"
 ISOFOREST_MODEL_PATH = MODEL_DIR / "isolation_forest.joblib"
 SCALER_PATH          = MODEL_DIR / "scaler.joblib"
-LSTM_MODEL_PATH      = MODEL_DIR / "lstm_autoencoder.tflite"
+TRANSFORMER_MODEL_PATH = MODEL_DIR / "transformer_autoencoder.pt"
 
 # ── JA3 threat-intel blocklist (hashes of known-malicious TLS fingerprints) ──
 # Source: https://ja3er.com/  |  https://github.com/salesforce/ja3
@@ -49,7 +49,7 @@ JA3_BLOCKLIST: set[str] = {
 }
 
 # ── Automated response ────────────────────────────────────────────────────────
-AUTO_BLOCK_ENABLED  = False   # set True to enable iptables auto-block
+AUTO_BLOCK_ENABLED  = True    # set True to enable iptables auto-block
 BLOCK_DURATION_SECS = 1800    # 30 min auto-expiry
 
 # ── API server ────────────────────────────────────────────────────────────────

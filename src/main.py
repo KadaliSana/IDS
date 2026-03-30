@@ -121,6 +121,13 @@ class SHIELDPipeline:
             if alert.attack_type == "Benign" or alert.risk_score < ALERT_THRESHOLD:
                 time.sleep(0.02)  # Process at ~50 flows per second for UI animation
                 return
+
+            handle_alert(alert)
+            ingest_alert(alert_dict)
+            if self._loop and self._loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    broadcast_alert(alert_dict), self._loop
+                )
             
             time.sleep(0.02)  # Process at ~50 flows per second for UI animation
 

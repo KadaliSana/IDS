@@ -4,7 +4,7 @@ Privacy-preserving IDS using Zeek + ML ensemble + TLS fingerprinting. No packet 
 
 ## Features
 
-- **4-Model Ensemble**: Isolation Forest + Random Forest + LSTM Autoencoder + Statistical Detector
+- **4-Model Ensemble**: Isolation Forest + Random Forest + Transformer Autoencoder + Statistical Detector
 - **TLS Fingerprinting**: JA3/JA3S hash analysis, threat-intel matching against known malware signatures
 - **Real-time Dashboard**: WebSocket-powered live traffic view, alert queue, risk gauges, SHAP explainability
 - **Automated Response**: iptables auto-blocking with configurable thresholds and auto-expiry
@@ -24,8 +24,8 @@ sudo zeek -i eth0 policy/protocols/ssl/ja3.zeek LogAscii::use_json=T
 ### 2. Install Python dependencies
 ```bash
 pip install -r requirements.txt
-# On Raspberry Pi, replace tensorflow with:
-pip install tflite-runtime
+# Make sure PyTorch is installed:
+pip install torch
 ```
 
 ### 3. Train models (first time)
@@ -35,11 +35,10 @@ pip install tflite-runtime
 python main.py --mode train \
     --csv-path data/NF-UQ-NIDS-v2.csv
 
-# Train LSTM Autoencoder separately:
-python -m models.train_lstm \
+# Train Transformer Autoencoder separately:
+python -m models.train_transformer \
     --csv-path data/NF-UQ-NIDS-v2.csv \
-    --epochs 30 \
-    --export-tflite
+    --epochs 30
 ```
 
 ### 4. Run live detection
@@ -70,9 +69,9 @@ shield/
 │   ├── extractor.py             # 39-feature vector extraction (NF-UQ-NIDS schema)
 │   └── tls_fingerprint.py       # JA3/JA3S fingerprinting + threat-intel engine
 ├── models/
-│   ├── detectors.py             # IsoForest, RF, LSTM, Statistical detectors
-│   ├── train_lstm.py            # LSTM Autoencoder training + TFLite export
-│   └── artefacts/               # saved .joblib / .tflite / .npz files
+│   ├── detectors.py             # IsoForest, RF, Transformer, Statistical detectors
+│   ├── train_transformer.py     # Transformer Autoencoder training
+│   └── artefacts/               # saved .joblib / .pt / .npz files
 ├── scoring/
 │   └── risk_scorer.py           # ensemble fusion + TLS analysis + SHAP + alerts
 ├── response/
@@ -97,22 +96,19 @@ SHIELD performs deep TLS metadata analysis on every SSL/TLS flow:
 | **SNI Anomaly** | DGA detection via entropy analysis, suspicious TLD flagging |
 | **Frequency** | Tracks first-seen fingerprints for zero-day detection |
 
-## LSTM Training
+## Transformer Training
 
 Train the temporal anomaly detector separately for best results:
 
 ```bash
 # Full training (recommended)
-python -m models.train_lstm --csv-path data/NF-UQ-NIDS-v2.csv --sample-frac 0.1
+python -m models.train_transformer --csv-path data/NF-UQ-NIDS-v2.csv --sample-frac 0.1
 
 # Quick test
-python -m models.train_lstm --csv-path data/NF-UQ-NIDS-v2.csv --sample-frac 0.01 --epochs 5
-
-# Convert existing model to TFLite only
-python -m models.train_lstm --convert-only
+python -m models.train_transformer --csv-path data/NF-UQ-NIDS-v2.csv --sample-frac 0.01 --epochs 5
 ```
 
-The LSTM autoencoder learns to reconstruct normal traffic sequences. At inference time, high reconstruction error signals a temporal anomaly.
+The Transformer autoencoder learns to reconstruct normal traffic sequences using Multi-Head Attention. At inference time, high reconstruction error signals a temporal anomaly.
 
 ## Tuning
 

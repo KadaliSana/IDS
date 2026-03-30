@@ -1,20 +1,3 @@
-"""
-dashboard/api.py
-────────────────
-FastAPI server exposing:
-    GET  /alerts          — recent alerts (JSON)
-    GET  /stats           — live metrics
-    GET  /traffic         — recent network flows (benign + malicious)
-    GET  /traffic/stats   — aggregated traffic statistics
-    GET  /blocked         — current block list
-    POST /block/{ip}      — manual block
-    POST /unblock/{ip}    — manual unblock
-    WS   /ws/alerts       — live WebSocket feed for the dashboard
-
-Run with:
-    uvicorn dashboard.api:app --host 0.0.0.0 --port 8000
-"""
-
 import asyncio
 import json
 import time
@@ -248,7 +231,7 @@ async def trigger_test_alert():
         "proto": "TCP",
         "top_features": [["pkt_len_var", 0.45], ["flow_duration", 0.22], ["ack_flag_cnt", 0.15]],
         "explanation": "Simulated anomaly detected in traffic pattern. Rapid sequence of connection attempts." if is_malicious else "Normal traffic pattern observed.",
-        "should_block": is_malicious and choice([True, False]),
+        "should_block": is_malicious,
         "ja3": choice(["e7d705a3286e19ea42f587b344ee6865", "6734f37431670b3ab4292b8f60f29984", None]) if is_malicious else None,
         "tls_version": "TLSv1.3" if choice([True, False]) else "TLSv1.2",
         "ja3_blocked": False
@@ -313,8 +296,13 @@ async def trigger_test_alert():
             _tls_stats["top_ja3"].append((unk_hash, 1))
 
     # Synchronize total count perfectly
-    _tls_stats["total_fingerprinted"] = sum(c for h, c in _tls_stats["top_ja3"])
-    
+    # Actually trigger the auto-block if the mock alert dictates it
+    from config.settings import AUTO_BLOCK_ENABLED
+    if mock_alert["should_block"] and AUTO_BLOCK_ENABLED:
+        src_ip = mock_alert["src"].split(":")[0]
+        if not _is_already_blocked(src_ip):
+            _block_ip(src_ip, mock_alert["risk_score"])
+
     # Broadcast to all websocket clients
     await broadcast_alert(mock_alert)
     await broadcast_flow(mock_flow)

@@ -20,7 +20,7 @@ from config.settings import (
 from models.detectors import (
     IsolationForestDetector,
     RandomForestDetector,
-    LSTMDetector,
+    TransformerDetector,
     StatisticalDetector,
 )
 from features.tls_fingerprint import TLSFingerprintEngine
@@ -148,7 +148,7 @@ class RiskScorer:
     def __init__(self):
         self._iso  = IsolationForestDetector()
         self._rf   = RandomForestDetector()
-        self._lstm = LSTMDetector()
+        self._transformer = TransformerDetector()
         self._stat = StatisticalDetector()
         
         # Use weights from config (it's already a dict)
@@ -161,14 +161,14 @@ class RiskScorer:
     # ── lifecycle ─────────────────────────────────────────────────────────────
 
     def load_models(self):
-        for det in (self._iso, self._rf, self._lstm, self._stat):
+        for det in (self._iso, self._rf, self._transformer, self._stat):
             try:
                 det.load()
             except Exception as exc:
                 logger.warning("Could not load %s: %s", det.name, exc)
 
     def save_models(self):
-        for det in (self._iso, self._rf, self._lstm, self._stat):
+        for det in (self._iso, self._rf, self._transformer, self._stat):
             try:
                 det.save()
             except Exception as exc:
@@ -202,7 +202,7 @@ class RiskScorer:
         scores = {
             "isolation_forest": self._iso.score(feature_vec),
             "random_forest":    self._rf.score(feature_vec),
-            "lstm":             self._lstm.score(feature_vec),
+            "transformer":      self._transformer.score(feature_vec),
             "statistical":      self._stat.score(feature_vec),
         }
 

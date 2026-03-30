@@ -1,10 +1,3 @@
-"""
-intel/abuse_ch.py
-─────────────────
-Fetches and parses the JA3 fingerprint blacklist from abuse.ch (SSLBL).
-Updates local JA3_THREAT_DB in features/tls_fingerprint.py.
-"""
-
 import csv
 import logging
 import requests

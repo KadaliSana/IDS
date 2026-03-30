@@ -1,15 +1,3 @@
-"""
-capture/zeek_reader.py
-──────────────────────
-Tails Zeek's conn.log and ssl.log simultaneously, joins records on
-their shared `uid` field, and emits enriched flow dicts ready for
-feature extraction.
-
-Requires:
-    pip install zat
-    zeek running with: zeek -i eth0 policy/protocols/ssl/ja3.zeek LogAscii::use_json=T
-"""
-
 import time
 import threading
 import logging

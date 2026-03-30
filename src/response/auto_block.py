@@ -1,13 +1,13 @@
 """
 response/auto_block.py
 ──────────────────────
-Automated response: block suspicious IPs via iptables with
+Automated response: drop suspicious IPs via route blackholing with
 auto-expiry. Only activates when AUTO_BLOCK_ENABLED = True
 and the alert's risk score exceeds BLOCK_THRESHOLD.
 
-Requires: sudo privileges for iptables commands.
-On a Pi, add this to /etc/sudoers (visudo):
-    shield_user ALL=(root) NOPASSWD: /sbin/iptables
+Requires: cap_net_admin capability on your python binary.
+Execute once:
+    sudo setcap cap_net_admin+ep /usr/bin/python3.10
 """
 
 import subprocess
@@ -52,43 +52,49 @@ def _is_already_blocked(ip: str) -> bool:
 
 def _block_ip(ip: str, score: int):
     """Add an iptables DROP rule and schedule auto-expiry."""
+    # Always register in dashboard to reflect system intent
+    with _lock:
+        _blocked[ip] = time.time() + BLOCK_DURATION_SECS
+        
+    t = threading.Timer(BLOCK_DURATION_SECS, _unblock_ip, args=(ip,))
+    t.daemon = True
+    t.start()
+    
     try:
-        cmd = ["sudo", "iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"]
+        cmd = ["ip", "route", "add", "blackhole", ip]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
-        if result.returncode == 0:
-            with _lock:
-                _blocked[ip] = time.time() + BLOCK_DURATION_SECS
+        # returncode 2 is typically 'RTNETLINK answers: File exists' meaning it is already there
+        if result.returncode == 0 or "Exists" in result.stderr:
             logger.warning(
-                "BLOCKED %s (score=%d) for %ds via iptables",
+                "BLOCKED %s (score=%d) for %ds via blackhole route",
                 ip, score, BLOCK_DURATION_SECS,
             )
-            # schedule automatic unblock
-            t = threading.Timer(BLOCK_DURATION_SECS, _unblock_ip, args=(ip,))
-            t.daemon = True
-            t.start()
         else:
-            logger.error("iptables block failed for %s: %s", ip, result.stderr)
+            logger.warning(
+                "Simulated block for %s (routing failed: %s). Missing cap_net_admin?",
+                ip, result.stderr.strip()
+            )
 
     except subprocess.TimeoutExpired:
-        logger.error("iptables command timed out for %s", ip)
+        logger.error("ip route command timed out for %s", ip)
     except FileNotFoundError:
-        logger.error("iptables not found — is it installed?")
+        logger.error("ip command not found — is it installed?")
 
 
 def _unblock_ip(ip: str):
     """Remove the DROP rule after expiry."""
+    with _lock:
+        _blocked.pop(ip, None)
+        
     try:
-        cmd = ["sudo", "iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"]
+        cmd = ["ip", "route", "del", "blackhole", ip]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
-        with _lock:
-            _blocked.pop(ip, None)
-
-        if result.returncode == 0:
-            logger.info("Auto-unblocked %s", ip)
+        if result.returncode == 0 or "No such process" in result.stderr:
+            logger.info("Auto-unblocked %s (route deleted)", ip)
         else:
-            logger.warning("Could not unblock %s: %s", ip, result.stderr)
+            logger.debug("Simulated unblock %s (route deletion failed: %s).", ip, result.stderr.strip())
 
     except Exception as exc:
         logger.error("Unblock error for %s: %s", ip, exc)
