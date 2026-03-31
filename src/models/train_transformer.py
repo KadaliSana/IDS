@@ -34,8 +34,8 @@ THRESHOLD_PATH = MODEL_DIR / "transformer_threshold.npz"
 
 # ── Dataset Loading ───────────────────────────────────────────────────────────
 
-def load_benign_features(csv_path: str, sample_frac: float = 0.05,
-                          chunk_size: int = 250_000) -> np.ndarray:
+def load_benign_features(csv_path: str, sample_frac: float = 0.001,
+                          chunk_size: int = 1000000) -> np.ndarray:
     """
     Stream the NF-UQ-NIDS CSV, keep only benign traffic (Label==0),
     drop identifiers, and return a float32 feature matrix.
@@ -269,11 +269,11 @@ def main():
         description="Train Transformer Autoencoder for SHIELD IDS anomaly detection"
     )
     parser.add_argument(
-        "--csv-path", default="data/NF-UQ-NIDS-v2.csv",
+        "--csv-path", default="models/data/NF-UQ-NIDS-v2.csv",
         help="Path to the NF-UQ-NIDS CSV dataset"
     )
     parser.add_argument(
-        "--sample-frac", type=float, default=0.05,
+        "--sample-frac", type=float, default=0.001,
         help="Fraction of benign traffic to sample (default: 0.05)"
     )
     parser.add_argument(

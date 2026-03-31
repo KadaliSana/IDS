@@ -22,14 +22,14 @@ MIN_PKTS_THRESHOLD = 3        # ignore single-packet blips
 
 # ── Risk scoring ──────────────────────────────────────────────────────────────
 ALERT_THRESHOLD   = 60        # 0-100; fire alert above this
-BLOCK_THRESHOLD   = 85        # auto-block above this (if enabled)
+BLOCK_THRESHOLD   = 75        # auto-block above this (if enabled)
 
 # Ensemble weights (must sum to 1.0)
 ENSEMBLE_WEIGHTS = {
-    "isolation_forest": 0.25,
-    "random_forest":    0.35,
-    "transformer":      0.25,
-    "statistical":      0.15,
+    "isolation_forest": 0.0,
+    "random_forest":    0.50,
+    "transformer":      0.50,
+    "statistical":      0.0,
 }
 
 # ── Model artefacts ───────────────────────────────────────────────────────────

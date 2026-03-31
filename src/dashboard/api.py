@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from response.auto_block import blocked_ips, manual_unblock, _block_ip, _is_already_blocked
@@ -219,3 +220,7 @@ async def serve_dashboard():
     with open(html_path, "r", encoding="utf-8") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content)
+
+# Mount static files AFTER all API routes so they don't shadow them
+_dashboard_dir = _Path(__file__).parent
+app.mount("/static", StaticFiles(directory=str(_dashboard_dir)), name="static")

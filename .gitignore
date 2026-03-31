@@ -1,0 +1,10 @@
+*.csv
+*.log
+*.zeek
+*.pyc
+*joblib
+*npz
+src/server.pid
+__pycache__
+*.pt
+*.pcap
