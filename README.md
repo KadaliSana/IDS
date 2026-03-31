@@ -16,64 +16,7 @@ SHIELD is a next-generation Intrusion Detection System (IDS) that combines deep 
 - **Threat Intelligence**: Integrates with threat intelligence feeds
 
 ## Architecture
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          SHIELD - IDS SYSTEM                             │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  ZEEK Network Monitor                                              │  │
-│  │  - Captures conn.log, ssl.log, dns.log, weird.log                   │  │
-│  │  - Real-time log streaming                                         │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  Feature Extraction Engine                                         │  │
-│  │  - Flow-based feature engineering                                  │  │
-│  │  - TLS JA3 fingerprint extraction                                  │  │
-│  │  - Statistical feature extraction                                  │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  AI Detection Models                                               │  │
-│  │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  │  Transformer Autoencoder (Deep Learning)                     │  │
-│  │  │  - Anomaly detection                                           │  │
-│  │  │  - Sequence-based analysis                                     │  │
-│  │  └──────────────────────────────────────────────────────────────┘  │
-│  │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  │  Random Forest Classifier (Supervised)                       │  │
-│  │  │  - 21 attack categories                                        │  │
-│  │  │  - Attack classification                                       │  │
-│  │  └──────────────────────────────────────────────────────────────┘  │
-│  │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  │  Isolation Forest (Unsupervised)                             │  │
-│  │  │  - Anomaly detection                                           │  │
-│  │  │  - Outlier detection                                           │  │
-│  │  └──────────────────────────────────────────────────────────────┘  │
-│  │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  │  Statistical Baseline                                          │  │
-│  │  │  - Real-time deviation detection                               │  │
-│  │  │  - Threshold-based alerting                                    │  │
-│  │  └──────────────────────────────────────────────────────────────┘  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  Risk Scoring & Decision Engine                                    │  │
-│  │  - Ensemble scoring algorithm                                      │  │
-│  │  - Weighted threat assessment                                      │  │
-│  │  - Automated blocking                                              │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  Dashboard & API                                                   │  │
-│  │  - Real-time analytics                                             │  │
-│  │  - Threat visualization                                            │  │
-│  │  - WebSocket notifications                                         │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────┘
-```
+![Architecture](images/arch.png)
 
 ## Prerequisites
 
