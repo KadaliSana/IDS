@@ -18,6 +18,9 @@ SHIELD is a next-generation Intrusion Detection System (IDS) that combines deep 
 ## Architecture
 ![Architecture](images/arch.png)
 
+## Working Dashboard
+![Dashboard](images/dashboard.png)
+
 ## Prerequisites
 
 - Python 3.8+
